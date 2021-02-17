@@ -12,11 +12,11 @@ Dataset used in this project is the "Global Superstore" data which comprise tran
 
 The project can be organised in two stages: 
 
-<u>Stage 1 - Clustering</u>
+<u>*Stage 1 - Clustering*</u>
  
 For each product category, I apply unsupervised learning algorithms, `Kmeans`, `DBSCAN`, and `Agglomerative Clustering` to identify clusters of price ranges. Evaluation metric to decide on the optimal number of cluster is the silhouette score, which is the average distance between clusters. A silhouette score ranges from -1 to +1 and a higher score indicates better separation between the clusters.
 
-<u>Stage 2 - Regression</u>
+<u>*Stage 2 - Regression*</u>
 
 Once clusters are set, I perform multivariate regression analysis using `ElasticNetCV`, `Random Forest Regressor`, `Support Vector Regressor` and `XGBoost Regressor` algorithms on each cluster, with profit being the target variable. From the line of best fit, get an accurate range of unit prices for that cluster, where transactions are profitable. 
 
