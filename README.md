@@ -244,7 +244,7 @@ https://www.statisticshowto.com/ridge-regression/
 
 # Data Dictionary
 
-Below the description of Superstore data. This dataset comprise all transactions 
+Below the description of Superstore data. This dataset comprise transactions of global retailers on products within the period 2012 to 2015.
 
 | Features | Data Type | Description |
 | :-------: | :--: | :---- |
