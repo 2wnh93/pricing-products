@@ -99,7 +99,9 @@ Clustering algorithms like `KMeans` are distance-based algorithms so prior to ru
 
 To avoid any noise in the data that can affect clustering, I tried combinations of features, to eventually scale down to the more important ones for clustering. 
 
-<u>KMeans</u>
+In this section, I performed clustering using three different clustering algorithms, `KMeans`, `DBSCAN` and `Agglomerative Clustering` to determine which one is appropriate to create good clusters within the data. 
+
+##### <ins>KMeans</ins>
 
 For KMeans, I have to feed the number of clusters and assess the silhouette score subsequently. I applied a range of 2 to 10 clusters to determine which number of clusters is the best, using the elbow method, inconjunction with the silhouette score. 
 
@@ -109,33 +111,134 @@ For KMeans, I have to feed the number of clusters and assess the silhouette scor
 
 **Distortion score** is the sum of squared distances from each point to its assigned center (ie. sum of squared errors). The elbow method seeks to identify a point as number of clusters increase, where the distortion score start to flatten, forming the elbow. This is determined to be the ideal number of clusters for the data.
 
-Figure 5 shows that 3 clusters is the ideal number of clusters. 
+Figure 5 shows that 3 clusters is the ideal number of clusters. I plot the silhouette scores for 2 clusters to 4 clusters to assess if 3 clusters is indeed the one which best separates the clusters. 
 
 ![](images/silhouette.JPG)
 
 *Figure 6: Silhouette score of 2 to 4 clusters*
 
+Figure 6 shows that 3 clusters has the highest silhouette score of ~0.61, compared to 2 clusters (~0.55) or 4 clusters (~0.5). I also view the intercluster distance (Figure 7) through multidimensional scaling (MDS) and noted that each cluster is clearly separated. From this, we can also infer that each of these clusters contain transactions with characteristics that are truly unique to each cluster. 
+
+![](images/intercluster.JPG)
+
+*Figure 7: Intercluster distance of 3 clusters, via multidimensional scaling (MDS)*
 
 
+##### <ins>Density-based Spatial Clustering of Application with Noise (DBSCAN)</ins>
+
+DBSCAN is well-suited for clustering data with minimal domain knowledge (unlike `k` in KMeans). It is also suited for discovering clusters with arbitrary shapes and is efficient on large databases.
+
+DBSCAN clustering algorithm takes on two parameters :
+- epsilon (`eps`); and
+- minimum samples (`min_samples`)
+
+Using nearest neighbours(Maklin, 2019), I determined the optimal `eps` to be 0.18. When running the algorithm, it returned an error which shows that there is only one cluster label created. This suggests that the data points are very close together, such that the model was unable to set more than one cluster to the data. 
+
+##### <ins>Agglomerative Clustering</ins>
+
+Agglomerative Clustering groups objects based on their similarity. It works in a "bottom-up" manner whereby each object is initially considered as a single element cluster (leaf). At each step of the algorithm, the two clusters that are the most similar are combined into a new bigger cluster (nodes). This process is repeated until all points are a member of a single big cluster (Datanovia, n.d.)
+
+Figure 8 shows the silhouette scores of a range of 2 to 10 clusters using agglomerative clustering and it also shows that 3 clusters is optimal, with the higher silhouette score of 0.61.
+
+![](images/agglomerative.JPG)
+
+*Figure 8: Silhouette scores of 2 to 10 clusters made using agglomerative clustering*
+
+##### Conclusion
+
+`KMeans` and `Agglomerative Clustering` worked equally well to create 3 clusters of the dataset. Looking at neighbouring cluster numbers, it appears that `KMeans` did better, so I move forward with `KMeans` clusters. 
+
+![](images/trx-count.JPG)
+
+*Figure 9: Number of transactions in each cluster*
+
+Majority of the transactions are classified under Cluster 1. 
+
+![](images/characteristics-clusters.JPG)
+
+*Figure 10: Characteristics of each cluster*
+
+| Feature | **Cluster 1** | **Cluster 2** | **Cluster 3** |
+| :----: | :-------- | :-------- | :------- |
+| Sales | Highest sales compared to other clusters with mean of about ~USD500 | Average sales of ~USD200 | Average sales of ~USD160 |
+| Profit | Most profitable | Half as profitable | Non-profitable |
+| Shipping Cost | Highest shipping cost imposed | Half the shipping cost as Cluster 1 | Lowest shiping cost |
+| Quantity | Highest quantity purchased | Lower average quantity at about 1-2 | Lower average quantity purchased at about 2-3 |
+| Discount | Relatively low discount average at about 0.1% | Similar to Cluster 1 | Huge discounts >0.4% |
+| Regions | All regions except non-profitable regions | All regions except non-profitable regions | Non-profitable regions : `Western Africa`, `Western Asia` and `Central Asia` |
+
+Based on these clusters, we see information that flows from EDA where:
+- profitable cluster had the highest shipping cost,
+- unprofitable cluster had the highest discounts,
+- unprofitable cluster is coming from regions `Western Africa`, `Western Asia` and `Central Asia`
+
+#### [<ins>Regression</ins>](code/03-modelling-regression.ipynb)
+
+In this section, I perform multivariate regression on each cluster using algorithms `LassoCV`, `Elastic Net CV`, `RidgeCV`, `Random Forest Regressor`, `Support Vector Regressor` and `XG Boost Regressor`.
+
+The objective is to obtain the regression line, from which I would be able to view how profit per unit changes with changes in unit price. For this coefficients and the y-intercept are needed so I will only consider `LassoCV`, `Elastic Net CV` or `RidgeCV` as the working model. The tree-based algorithms, `Random Forest Regressor` and `XG Boost Regressor`, and `Support Vector Regressor` are to assess how the data works with tree-based algorithms.
+
+For each cluster, I split the data into training set and test set. I assess the R<sup>2</sup> score of algorithms, using nested cross-validation with tuned hyperparameters. 
+
+![](images/nestedcv-clusters.JPG)
+
+*Figure 11: Nested cross-validation R<sup>2</sup> score of respective clusters*
+
+From Figure 11, we can see that tree-based algorithms generally did better across all clusters and that `RidgeCV` could not work for all clusters probably because, its main use is for when predictor variables exceed the number of transactions which is not the case here.   
+
+![](images/results-test-data.JPG)
+
+*Figure 12: R<sup>2</sup> score of respective clusters' best model*
+
+For Cluster 1, `LassoCV` works best and on unseen data, it is able to account for 88% of variability. Best working model for Cluster 2 is `Lasso CV` too, being able to account for 95% of variability of data. Cluster 3's best performing model is `Elastic Net CV`, being able to account for 66% of variability of data.  
 
 ## Conclusion and Recommendation
 
+Taking the intercept and coefficients for each cluster's best model, I plot the regression line of profit per unit against unit price, in Figure 13 below. 
 
+![](images/regressionline-clusters.JPG)
+
+*Figure 13: Regression line for respective clusters*
+
+If I were to set up a business and sell phones, I would avoid selling or operating at `Western Africa`, `Western Asia` or `Central Asia` as all phone transactions in these regions are not profitable at any unit price. Instead I would focus on other selling in other regions. 
+
+Between Cluster 1 and Cluster 2, Cluster 1 comprise transactions with larger quantities than Cluster 2. To command a higher unit price, I should create a sale incorporating marketing or advertising strategies to encourage more purchases. For instance, bulk discounts or take advantage of seasonality of sales or occasion-based sales like Valentine's Day or Black Friday sale.
+
+If say it is not possible to price the phone any higher, to consider grouping purchases, which include the phone and other accessories related to the phone for example headphones or ear phones, or handphone cases. This may entice the customer to purchase more items, while paying for a reasonable price for the phone. 
 
 ## Limitations and Challenges
-- as much as art as it is science. (Masserman, 2021)
-- must also take into consideration factors affecting purchase behaviour like affluence (propensity to spend like age, housing.), which we lack the data for. 
-- learning points: 
-- munging data, shifting of objectives. 
+
+<ins>Nature of setting prices</ins>
+
+While the project has attempted to price a product based purely on past data obtained, pricing is as much art as it is science (Masserman, 2021). There are many other external factors that influence prices for instance, branding, marketing and advertising strategies. The latest phone model should be priced much higher than older models, for the same brand. 
+
+<ins>Scaling and monitoring</ins>
+
+Consumer purchase behaviour changes over time, and so the model needs consistent monitoring. Scaling may be an issue because as time passes, more consumers are added to the database, and hence, much more processing power is needed to handle the huge amounts of data. We might end up with much more clusters with more data. 
 
 ## Further Development
-Intended intention of this project was to use ecommerce retail transactions data, and perform customer segmentation, and infer consumer behaviour from there. 
+
+<ins>Consumer segmentation</ins>
+
+Apart from clustering by transactions, another way to group purchases is by customer segmentation. This would require customer details to provide insights as to consumer purchase behaviour. For example, customer's spending score (ie. propensity to spend), age, income etc. 
+
+<ins>Focused scope or broader scope</ins>
+
+While the project focused on a particular product category, we can further develop the project by looking deeper within the product category like into specific brands, or specific phone models. The project can also be further developed by looking at other categories outside of phones.
 
 ## References
 
 "How to Price Your Products" (Masserman, 2021)
 https://www.inc.com/guides/price-your-products.html
 
+"DBSCAN Python Example: The Optimal Value For Epsilon (EPS)" (Maklin, 2019)
+https://towardsdatascience.com/machine-learning-clustering-dbscan-determine-the-optimal-value-for-epsilon-eps-python-example-3100091cfbc
+
+"Agglomerative Hierarchical Clustering"(Datanovia, n.d.)
+https://www.datanovia.com/en/lessons/agglomerative-hierarchical-clustering/
+
+"Ridge Regression" (Statistics How To, 2017)
+https://www.statisticshowto.com/ridge-regression/
 
 ----
 
