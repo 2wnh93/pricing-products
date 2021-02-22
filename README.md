@@ -44,6 +44,14 @@ Once clusters are set, I perform multivariate regression analysis using `Elastic
     |   |__ eda.jpg
     |   |__ discount.jpg
     |   |__ rfm.jpg
+    |   |__ agglomerative.jpg
+    |   |__ characteristics-clusters.jpg
+    |   |__ intercluster.jpg
+    |   |__ nestedcv-clusters.jpg
+    |   |__ regressionline-clusters.jpg
+    |   |__ results-test-data.jpg
+    |   |__ trx-count.jpg
+    |   |__ silhouette.jpg
     |__ presentation_slides
     |   |__ pricing-products-capstone.pdf
     |__ README.md
