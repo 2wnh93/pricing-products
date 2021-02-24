@@ -140,17 +140,25 @@ DBSCAN clustering algorithm takes on two parameters :
 - epsilon (`eps`); and
 - minimum samples (`min_samples`)
 
-Using nearest neighbours(Maklin, 2019), I determined the optimal `eps` to be 0.18. When running the algorithm, it returned an error which shows that there is only one cluster label created. This suggests that the data points are very close together, such that the model was unable to set more than one cluster to the data. 
+Using nearest neighbours(Maklin, 2019), I determined the optimal `eps` to be 0.18. Using a minimum sample of 3, 10 and 100, the results are in Figure 8.
+
+![](images/dbscan.JPG)
+
+*Figure 8: Silhouette scores for minimum samples of 3, 10, and 100 using DBSCAN*
+
+Silhouette scores are significantly lower than `KMeans`. The highest is 35 clusters with silhouette score of 0.282. This suggests that the dataset comprise data points with varying density.
+
+I am unlikely to consider `DBSCAN` as the clustering model due to the very low silhouette score.
 
 ##### <ins>Agglomerative Clustering</ins>
 
 Agglomerative Clustering groups objects based on their similarity. It works in a "bottom-up" manner whereby each object is initially considered as a single element cluster (leaf). At each step of the algorithm, the two clusters that are the most similar are combined into a new bigger cluster (nodes). This process is repeated until all points are a member of a single big cluster (Datanovia, n.d.)
 
-Figure 8 shows the silhouette scores of a range of 2 to 10 clusters using agglomerative clustering and it also shows that 3 clusters is optimal, with the higher silhouette score of 0.61.
+Figure 9 shows the silhouette scores of a range of 2 to 10 clusters using agglomerative clustering and it also shows that 3 clusters is optimal, with the higher silhouette score of 0.61.
 
 ![](images/agglomerative.JPG)
 
-*Figure 8: Silhouette scores of 2 to 10 clusters made using agglomerative clustering*
+*Figure 9: Silhouette scores of 2 to 10 clusters made using agglomerative clustering*
 
 ##### Conclusion
 
@@ -158,13 +166,13 @@ Figure 8 shows the silhouette scores of a range of 2 to 10 clusters using agglom
 
 ![](images/trx-count.JPG)
 
-*Figure 9: Number of transactions in each cluster*
+*Figure 10: Number of transactions in each cluster*
 
 Majority of the transactions are classified under Cluster 1. 
 
 ![](images/characteristics-clusters.JPG)
 
-*Figure 10: Characteristics of each cluster*
+*Figure 11: Characteristics of each cluster*
 
 | Feature | **Cluster 1** | **Cluster 2** | **Cluster 3** |
 | :----: | :-------- | :-------- | :------- |
@@ -190,29 +198,37 @@ For each cluster, I split the data into training set and test set. I assess the 
 
 ![](images/nestedcv-clusters.JPG)
 
-*Figure 11: Nested cross-validation R<sup>2</sup> score of respective clusters*
+*Figure 12: Nested cross-validation R<sup>2</sup> score of respective clusters*
 
 From Figure 11, we can see that tree-based algorithms generally did better across all clusters and that `RidgeCV` could not work for all clusters probably because, its main use is for when predictor variables exceed the number of transactions which is not the case here.   
 
 ![](images/results-test-data.JPG)
 
-*Figure 12: R<sup>2</sup> score of respective clusters' best model*
+*Figure 13: R<sup>2</sup> score of respective clusters' best model*
 
 For Cluster 1, `LassoCV` works best and on unseen data, it is able to account for 88% of variability. Best working model for Cluster 2 is `Lasso CV` too, being able to account for 95% of variability of data. Cluster 3's best performing model is `Elastic Net CV`, being able to account for 66% of variability of data.  
 
 ## Conclusion and Recommendation
 
-Taking the intercept and coefficients for each cluster's best model, I plot the regression line of profit per unit against unit price, in Figure 13 below. 
+Taking the intercept and coefficients for each cluster's best model, I plot the regression line of profit per unit against unit price, in Figure 14 below. 
 
 ![](images/regressionline-clusters.JPG)
 
-*Figure 13: Regression line for respective clusters*
+*Figure 14: Regression line for respective clusters*
 
 If I were to set up a business and sell phones, I would avoid selling or operating at `Western Africa`, `Western Asia` or `Central Asia` as all phone transactions in these regions are not profitable at any unit price. Instead I would focus on other selling in other regions. 
 
-Between Cluster 1 and Cluster 2, Cluster 1 comprise transactions with larger quantities than Cluster 2. To command a higher unit price, I should create a sale incorporating marketing or advertising strategies to encourage more purchases. For instance, bulk discounts or take advantage of seasonality of sales or occasion-based sales like Valentine's Day or Black Friday sale.
+Between Cluster 1 and Cluster 2, Cluster 1 comprise transactions with larger quantities purchased than Cluster 2. These are probably corporate consumers. To target these corporate consumers, I could consider providing bulk discounts or include free phone accessories if more phones are purchased. 
 
-If say it is not possible to price the phone any higher, to consider grouping purchases, which include the phone and other accessories related to the phone for example headphones or ear phones, or handphone cases. This may entice the customer to purchase more items, while paying for a reasonable price for the phone. 
+## Further Development
+
+<ins>Consumer segmentation</ins>
+
+Apart from clustering by transactions, another way to group purchases is by customer segmentation. This would require customer details to provide insights as to consumer purchase behaviour. For example, customer's spending score (ie. propensity to spend), age, income etc. 
+
+<ins>Focused scope or broader scope</ins>
+
+While the project focused on a particular product category, we can further develop the project by looking deeper within the product category like into specific brands, or specific phone models. The project can also be further developed by looking at other categories outside of phones.
 
 ## Limitations and Challenges
 
@@ -224,15 +240,6 @@ While the project has attempted to price a product based purely on past data obt
 
 Consumer purchase behaviour changes over time, and so the model needs consistent monitoring. Scaling may be an issue because as time passes, more consumers are added to the database, and hence, much more processing power is needed to handle the huge amounts of data. We might end up with much more clusters with more data. 
 
-## Further Development
-
-<ins>Consumer segmentation</ins>
-
-Apart from clustering by transactions, another way to group purchases is by customer segmentation. This would require customer details to provide insights as to consumer purchase behaviour. For example, customer's spending score (ie. propensity to spend), age, income etc. 
-
-<ins>Focused scope or broader scope</ins>
-
-While the project focused on a particular product category, we can further develop the project by looking deeper within the product category like into specific brands, or specific phone models. The project can also be further developed by looking at other categories outside of phones.
 
 ## References
 
